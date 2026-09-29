@@ -4,9 +4,9 @@ name: Release
 #   npm version patch   # bumps package.json + creates a git tag
 #   git push --follow-tags
 #
-# Requires an NPM_TOKEN repository secret (an npm "Automation" access token
-# with publish rights for the mcp-probe package). See CONTRIBUTING.md for
-# the full release process.
+# Requires an NPM_TOKEN repository secret (an npm "Automation" or granular
+# access token, with publish rights for @ogunbaysal/mcp-probe). See
+# CONTRIBUTING.md for the full release process.
 
 on:
   push:

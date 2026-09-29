@@ -1,5 +1,5 @@
 {
-  "name": "mcp-probe",
+  "name": "@ogunbaysal/mcp-probe",
   "version": "0.1.0",
   "description": "A fast CLI health check and linter for MCP (Model Context Protocol) servers.",
   "keywords": [
@@ -22,6 +22,9 @@
   "type": "module",
   "engines": {
     "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "bin": {
     "mcp-probe": "dist/index.js"

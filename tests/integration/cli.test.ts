@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { ExitCode } from "../../src/core/exit-codes.js";
 
 // End-to-end: spawns the actual built dist/index.js as a real child process
-// (exactly how a user's `npx mcp-probe ...` would run), exercising argument
+// (exactly how a user's `npx @ogunbaysal/mcp-probe ...` would run), exercising argument
 // parsing, process spawning, and both renderers together. Requires `npm run
 // build` to have produced dist/index.js and the fixtures (handled by the
 // `pretest` npm script).

@@ -84,7 +84,7 @@ implemented yet; please open an issue to discuss before building one.
 Publishing to npm is handled by `.github/workflows/release.yml`, triggered by pushing a version
 tag. One-time setup: create an npm
 [automation access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) for the
-`mcp-probe` package and add it as a repository secret named `NPM_TOKEN`
+`@ogunbaysal/mcp-probe` package and add it as a repository secret named `NPM_TOKEN`
 (Settings → Secrets and variables → Actions).
 
 To cut a release:

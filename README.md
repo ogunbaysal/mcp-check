@@ -3,7 +3,7 @@
 A fast CLI health check and linter for [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers.
 
 ```bash
-npx mcp-probe npx your-mcp-server
+npx @ogunbaysal/mcp-probe npx your-mcp-server
 ```
 
 It connects to your server over stdio, runs it through the MCP handshake, exercises whatever
@@ -67,21 +67,21 @@ ready to use?" — and stays out of your way otherwise.
 ## Quick Start
 
 ```bash
-npx mcp-probe npx @my-org/my-mcp-server
+npx @ogunbaysal/mcp-probe npx @my-org/my-mcp-server
 ```
 
 ```bash
-npx mcp-probe node ./dist/server.js
+npx @ogunbaysal/mcp-probe node ./dist/server.js
 ```
 
 ```bash
-npx mcp-probe python ./server.py
+npx @ogunbaysal/mcp-probe python ./server.py
 ```
 
 Or install it once and reuse it:
 
 ```bash
-npm install -g mcp-probe
+npm install -g @ogunbaysal/mcp-probe
 mcp-probe node ./dist/server.js
 ```
 
@@ -213,12 +213,12 @@ describing the stage, message, and possible causes.
 
 ```yaml
 - name: Check MCP server
-  run: npx mcp-probe npm run start:mcp
+  run: npx @ogunbaysal/mcp-probe npm run start:mcp
 ```
 
 ```yaml
 - name: Check MCP server (strict, with a longer timeout)
-  run: npx mcp-probe --strict --timeout 30000 node ./dist/server.js
+  run: npx @ogunbaysal/mcp-probe --strict --timeout 30000 node ./dist/server.js
 ```
 
 ## Exit Codes
