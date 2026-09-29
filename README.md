@@ -1,9 +1,9 @@
-# MCP Check
+# MCP Probe
 
 A fast CLI health check and linter for [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers.
 
 ```bash
-npx mcp-check npx your-mcp-server
+npx mcp-probe npx your-mcp-server
 ```
 
 It connects to your server over stdio, runs it through the MCP handshake, exercises whatever
@@ -11,9 +11,9 @@ capabilities it advertises (tools/resources/prompts), validates the results, and
 then exits with a status code your CI can act on.
 
 ```
-$ mcp-check node ./dist/server.js
+$ mcp-probe node ./dist/server.js
 
-MCP Check
+MCP Probe
 
 ✓ Process started
 ✓ MCP connection established
@@ -57,7 +57,7 @@ that writes a stray `console.log` to stdout and silently breaks the JSON-RPC str
 bugs only surface once a real client (an IDE, an agent) tries to use the server — and even then the
 error is usually an opaque connection failure with no explanation.
 
-mcp-check is the `curl` + healthcheck + linter you run before that happens: point it at the command
+mcp-probe is the `curl` + healthcheck + linter you run before that happens: point it at the command
 that starts your server, and in well under a second you know whether it actually works.
 
 It deliberately does **not** try to be an MCP client, an IDE, an agent framework, or an
@@ -67,54 +67,54 @@ ready to use?" — and stays out of your way otherwise.
 ## Quick Start
 
 ```bash
-npx mcp-check npx @my-org/my-mcp-server
+npx mcp-probe npx @my-org/my-mcp-server
 ```
 
 ```bash
-npx mcp-check node ./dist/server.js
+npx mcp-probe node ./dist/server.js
 ```
 
 ```bash
-npx mcp-check python ./server.py
+npx mcp-probe python ./server.py
 ```
 
 Or install it once and reuse it:
 
 ```bash
-npm install -g mcp-check
-mcp-check node ./dist/server.js
+npm install -g mcp-probe
+mcp-probe node ./dist/server.js
 ```
 
 ## Examples
 
 ```bash
 # Human-readable report (default)
-mcp-check node server.js
+mcp-probe node server.js
 
 # Machine-readable JSON for scripts/CI
-mcp-check --json node server.js
+mcp-probe --json node server.js
 
 # Give a slow server more time (default is 10000ms)
-mcp-check --timeout 30000 node server.js
+mcp-probe --timeout 30000 node server.js
 
 # Treat warnings (e.g. missing tool descriptions) as failures
-mcp-check --strict node server.js
+mcp-probe --strict node server.js
 
 # Show connection lifecycle details, captured stderr, and raw errors
-mcp-check --verbose node server.js
+mcp-probe --verbose node server.js
 
 # Only print the final status and any errors
-mcp-check --quiet node server.js
+mcp-probe --quiet node server.js
 
 # Set environment variables the server needs (e.g. an API key), repeatable
-mcp-check --env API_KEY=secret --env DEBUG=1 node server.js
+mcp-probe --env API_KEY=secret --env DEBUG=1 node server.js
 ```
 
-Anything after your server's command belongs to _that_ command, not to mcp-check — so
-`mcp-check node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
-you'd expect. mcp-check's own flags must come before the command.
+Anything after your server's command belongs to _that_ command, not to mcp-probe — so
+`mcp-probe node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
+you'd expect. mcp-probe's own flags must come before the command.
 
-The target process always inherits mcp-check's own environment, so `export API_KEY=... && mcp-check
+The target process always inherits mcp-probe's own environment, so `export API_KEY=... && mcp-probe
 ...` already works. `--env KEY=VALUE` is the explicit, scriptable alternative — handy in CI or when
 you don't want to export a variable into the whole shell — and is layered on top of (never
 replaces) the inherited environment.
@@ -122,9 +122,9 @@ replaces) the inherited environment.
 A failing server looks like this:
 
 ```
-$ mcp-check node ./broken-server.js
+$ mcp-probe node ./broken-server.js
 
-MCP Check
+MCP Probe
 
 ✗ MCP connection failed
 
@@ -140,7 +140,7 @@ Possible causes:
 
 Run again with:
 
-  mcp-check --verbose node ./broken-server.js
+  mcp-probe --verbose node ./broken-server.js
 
 Result
 
@@ -149,7 +149,7 @@ FAIL
 
 ## Checks
 
-mcp-check only tests capabilities your server actually advertises — it never fails a server for
+mcp-probe only tests capabilities your server actually advertises — it never fails a server for
 not implementing tools, resources, or prompts.
 
 **Process & connection**
@@ -180,7 +180,7 @@ not implementing tools, resources, or prompts.
 **Performance**
 
 Every stage above is timed (process start, initialize, and each list operation) and shown in the
-report as an informational diagnostic. mcp-check does not fail a server for being slow in v1 — the
+report as an informational diagnostic. mcp-probe does not fail a server for being slow in v1 — the
 architecture leaves room for configurable thresholds later.
 
 ## JSON Output
@@ -213,12 +213,12 @@ describing the stage, message, and possible causes.
 
 ```yaml
 - name: Check MCP server
-  run: npx mcp-check npm run start:mcp
+  run: npx mcp-probe npm run start:mcp
 ```
 
 ```yaml
 - name: Check MCP server (strict, with a longer timeout)
-  run: npx mcp-check --strict --timeout 30000 node ./dist/server.js
+  run: npx mcp-probe --strict --timeout 30000 node ./dist/server.js
 ```
 
 ## Exit Codes
@@ -233,15 +233,15 @@ describing the stage, message, and possible causes.
 
 ## Security
 
-mcp-check executes the command you pass to it with the permissions of the current user, exactly
+mcp-probe executes the command you pass to it with the permissions of the current user, exactly
 like running it yourself. It never uses a shell to parse the command — arguments are passed
 directly to the OS — but it does not (and cannot) sandbox what the server itself does once running.
-Only run mcp-check against servers you trust.
+Only run mcp-probe against servers you trust.
 
 ## Development
 
 ```bash
-git clone https://github.com/mcp-check/mcp-check.git
+git clone https://github.com/ogunbaysal/mcp-check.git
 cd mcp-check
 npm install
 npm test

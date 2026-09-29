@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Reports the value of MCP_CHECK_TEST_ENV_VALUE back as its serverInfo
 // version, so integration tests can prove --env (or an inherited shell
-// variable) actually reaches the spawned process, not just mcp-check's own.
+// variable) actually reaches the spawned process, not just mcp-probe's own.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 

@@ -17,14 +17,14 @@ export type ParseResult = { ok: true; value: ParsedArgs } | { ok: false; error: 
 export const DEFAULT_TIMEOUT_MS = 10_000;
 
 /**
- * Parses `mcp-check [options] <command> [command args...]`.
+ * Parses `mcp-probe [options] <command> [command args...]`.
  *
  * Only tokens up to (and not including) the first non-flag token are
- * treated as mcp-check's own options. Everything from that point on
+ * treated as mcp-probe's own options. Everything from that point on
  * — including anything that looks like one of our flags — belongs to the
  * target command and is passed through verbatim. This mirrors tools like
- * `env`/`time`: `mcp-check node server.js --json` runs `node` with a
- * `--json` argument of its own, it does not switch mcp-check into JSON mode.
+ * `env`/`time`: `mcp-probe node server.js --json` runs `node` with a
+ * `--json` argument of its own, it does not switch mcp-probe into JSON mode.
  */
 export function parseCliArgs(argv: readonly string[]): ParseResult {
   const args: ParsedArgs = {
@@ -124,7 +124,7 @@ export function parseCliArgs(argv: readonly string[]): ParseResult {
   if (!args.help && !args.version && args.command === null) {
     return {
       ok: false,
-      error: "No command specified. Usage: mcp-check [options] <command> [args...]",
+      error: "No command specified. Usage: mcp-probe [options] <command> [args...]",
     };
   }
 

@@ -42,7 +42,7 @@ export function renderHuman(result: CheckResult, options: HumanRenderOptions): s
     return renderQuiet(result, color);
   }
 
-  const lines: string[] = ["MCP Check", ""];
+  const lines: string[] = ["MCP Probe", ""];
 
   if (result.fatal) {
     lines.push(...renderFatal(result, options.verbose, color));
@@ -192,7 +192,7 @@ function renderFatal(result: CheckResult, verbose: boolean, color: boolean): str
     if (fatal.cause) lines.push("Details (--verbose):", fatal.cause, "");
   } else {
     const targetCmd = [result.target.command, ...result.target.args].join(" ");
-    lines.push("Run again with:", "", `  mcp-check --verbose ${targetCmd}`, "");
+    lines.push("Run again with:", "", `  mcp-probe --verbose ${targetCmd}`, "");
   }
 
   lines.push("Result", "");

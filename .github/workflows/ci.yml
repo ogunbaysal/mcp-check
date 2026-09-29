@@ -50,6 +50,6 @@ jobs:
       - name: Smoke test the broken fixture fails
         run: |
           if node ./dist/index.js node ./fixtures/broken-server/dist/index.js; then
-            echo "expected mcp-check to exit non-zero for the broken fixture" >&2
+            echo "expected mcp-probe to exit non-zero for the broken fixture" >&2
             exit 1
           fi

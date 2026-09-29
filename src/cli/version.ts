@@ -27,7 +27,7 @@ export function getVersion(): string {
     const candidate = join(dir, "package.json");
     if (existsSync(candidate)) {
       const parsed = JSON.parse(readFileSync(candidate, "utf8")) as PackageJsonShape;
-      if (parsed.name === "mcp-check" && parsed.version) {
+      if (parsed.name === "mcp-probe" && parsed.version) {
         cachedVersion = parsed.version;
         return cachedVersion;
       }

@@ -15,7 +15,7 @@ export interface RunCheckOptions {
   clientVersion: string;
 }
 
-const CLIENT_NAME = "mcp-check";
+const CLIENT_NAME = "mcp-probe";
 
 /**
  * Runs the full diagnostic suite against a single MCP server: spawns the

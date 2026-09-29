@@ -1,5 +1,5 @@
 /**
- * Centralized process exit codes for mcp-check.
+ * Centralized process exit codes for mcp-probe.
  *
  * These values are part of the CLI's public contract (documented in the
  * README) and are relied upon by CI pipelines. Never inline a numeric exit
