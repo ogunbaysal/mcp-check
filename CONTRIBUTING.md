@@ -79,6 +79,25 @@ history/tracing. `mcp-probe test` / `benchmark` / `inspect` subcommands and file
 configuration are plausible future directions — the architecture doesn't block them — but aren't
 implemented yet; please open an issue to discuss before building one.
 
+## Release process
+
+Publishing to npm is handled by `.github/workflows/release.yml`, triggered by pushing a version
+tag. One-time setup: create an npm
+[automation access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) for the
+`mcp-probe` package and add it as a repository secret named `NPM_TOKEN`
+(Settings → Secrets and variables → Actions).
+
+To cut a release:
+
+```bash
+npm version patch   # or minor / major — bumps package.json and creates a git tag
+git push --follow-tags
+```
+
+The workflow re-runs lint/typecheck/test, verifies the tag matches `package.json`'s version, then
+publishes with `npm publish --provenance --access public`. Package name and version cannot be
+reused once published — double-check `package.json` before tagging.
+
 ## Pull requests
 
 - Keep PRs focused; unrelated formatting churn makes review harder.
