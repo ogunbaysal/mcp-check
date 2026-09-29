@@ -1,0 +1,63 @@
+{
+  "name": "mcp-check",
+  "version": "0.1.0",
+  "description": "A fast CLI health check and linter for MCP (Model Context Protocol) servers.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cli",
+    "healthcheck",
+    "linter",
+    "testing",
+    "ai"
+  ],
+  "homepage": "https://github.com/mcp-check/mcp-check#readme",
+  "bugs": "https://github.com/mcp-check/mcp-check/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcp-check/mcp-check.git"
+  },
+  "license": "MIT",
+  "author": "mcp-check contributors",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "mcp-check": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup && npm run build:fixtures",
+    "build:fixtures": "tsup --config tsup.fixtures.config.ts",
+    "dev": "tsup --watch --onSuccess \"node dist/index.js --help\"",
+    "pretest": "npm run build --silent",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "cross-spawn": "^7.0.6",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cross-spawn": "^6.0.6",
+    "@types/node": "^22.20.4",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.9",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.2"
+  }
+}
