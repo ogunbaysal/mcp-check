@@ -1,35 +1,14 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import type { ServerCapabilities } from "@modelcontextprotocol/sdk/types.js";
 import type {
   CheckItem,
   FatalError,
-  ServerInfo,
-  ProtocolInfo,
+  InitializationOutcome,
   ConnectionDiagnostics,
 } from "../core/result.js";
 import type { StdioTransport } from "../transport/stdio.js";
 import { TimeoutError } from "../utils/timeout.js";
 import { describeError, isRequestTimeout } from "../utils/errors.js";
-
-export interface InitializationSuccess {
-  fatal: undefined;
-  checks: CheckItem[];
-  timings: { processStart: number; initialize: number };
-  server: ServerInfo;
-  protocol: ProtocolInfo;
-  capabilities: ServerCapabilities;
-  diagnostics: ConnectionDiagnostics;
-}
-
-export interface InitializationFailure {
-  fatal: FatalError;
-  checks: CheckItem[];
-  timings: Partial<{ processStart: number; initialize: number }>;
-  diagnostics: ConnectionDiagnostics;
-}
-
-export type InitializationOutcome = InitializationSuccess | InitializationFailure;
 
 export interface InitializationOptions {
   clientName: string;

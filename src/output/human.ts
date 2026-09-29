@@ -160,7 +160,7 @@ function renderSummary(result: CheckResult, color: boolean): string[] {
 
 function renderQuiet(result: CheckResult, color: boolean): string {
   if (result.fatal) {
-    const heading = fatalHeading(result.fatal);
+    const heading = fatalHeading(result.fatal, result.target.type);
     return `${colorize(STATUS_SYMBOL.fail, "fail", color)} ${heading}\n\n${result.fatal.message}\n`;
   }
   const status = result.success ? "PASS" : "FAIL";
@@ -171,15 +171,21 @@ function renderQuiet(result: CheckResult, color: boolean): string {
   return lines.join("\n") + "\n";
 }
 
-function fatalHeading(fatal: FatalError): string {
-  return fatal.stage === "process" ? "Process failed to start" : "MCP connection failed";
+function fatalHeading(fatal: FatalError, targetType: CheckResult["target"]["type"]): string {
+  if (fatal.stage === "process") {
+    return targetType === "http" ? "Could not reach server" : "Process failed to start";
+  }
+  return "MCP connection failed";
 }
 
 function renderFatal(result: CheckResult, verbose: boolean, color: boolean): string[] {
   const fatal = result.fatal;
   if (!fatal) return [];
   const lines: string[] = [];
-  lines.push(`${colorize(STATUS_SYMBOL.fail, "fail", color)} ${fatalHeading(fatal)}`, "");
+  lines.push(
+    `${colorize(STATUS_SYMBOL.fail, "fail", color)} ${fatalHeading(fatal, result.target.type)}`,
+    "",
+  );
   lines.push("Error:", fatal.message, "");
 
   if (fatal.hints.length > 0) {
@@ -191,7 +197,10 @@ function renderFatal(result: CheckResult, verbose: boolean, color: boolean): str
   if (verbose) {
     if (fatal.cause) lines.push("Details (--verbose):", fatal.cause, "");
   } else {
-    const targetCmd = [result.target.command, ...result.target.args].join(" ");
+    const targetCmd =
+      result.target.type === "stdio"
+        ? [result.target.command, ...result.target.args].join(" ")
+        : result.target.url;
     lines.push("Run again with:", "", `  mcp-probe --verbose ${targetCmd}`, "");
   }
 
@@ -202,9 +211,10 @@ function renderFatal(result: CheckResult, verbose: boolean, color: boolean): str
 
 function renderVerboseDiagnostics(result: CheckResult): string[] {
   const lines: string[] = [];
-  const { pid, clientErrors, stderrTail } = result.diagnostics;
+  const { pid, clientErrors, stderrTail, httpTransport } = result.diagnostics;
   const details: string[] = [];
   if (pid !== null) details.push(`  PID: ${String(pid)}`);
+  if (httpTransport) details.push(`  HTTP transport: ${httpTransport}`);
   if (result.protocol?.version) details.push(`  Protocol version: ${result.protocol.version}`);
   if (clientErrors.length > 0) {
     details.push(`  Transport errors:`);

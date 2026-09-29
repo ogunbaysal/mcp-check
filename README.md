@@ -6,9 +6,10 @@ A fast CLI health check and linter for [Model Context Protocol](https://modelcon
 npx @ogunbaysal/mcp-probe npx your-mcp-server
 ```
 
-It connects to your server over stdio, runs it through the MCP handshake, exercises whatever
-capabilities it advertises (tools/resources/prompts), validates the results, and prints a report —
-then exits with a status code your CI can act on.
+It connects to your server — over stdio (spawning a command) or over HTTP (a URL) — runs it
+through the MCP handshake, exercises whatever capabilities it advertises
+(tools/resources/prompts), validates the results, and prints a report — then exits with a status
+code your CI can act on.
 
 ```
 $ mcp-probe node ./dist/server.js
@@ -58,7 +59,8 @@ bugs only surface once a real client (an IDE, an agent) tries to use the server 
 error is usually an opaque connection failure with no explanation.
 
 mcp-probe is the `curl` + healthcheck + linter you run before that happens: point it at the command
-that starts your server, and in well under a second you know whether it actually works.
+that starts your server (or the URL it's hosted at), and in well under a second you know whether it
+actually works.
 
 It deliberately does **not** try to be an MCP client, an IDE, an agent framework, or an
 observability platform. It answers one question — "is my MCP server correctly implemented and
@@ -66,16 +68,20 @@ ready to use?" — and stays out of your way otherwise.
 
 ## Quick Start
 
+**A local server, run over stdio:**
+
 ```bash
 npx @ogunbaysal/mcp-probe npx @my-org/my-mcp-server
-```
-
-```bash
 npx @ogunbaysal/mcp-probe node ./dist/server.js
+npx @ogunbaysal/mcp-probe python ./server.py
 ```
 
+**A remote server, run over HTTP** (the target is auto-detected as a URL when it starts with
+`http://` or `https://`; tries the modern Streamable HTTP transport first, falling back to SSE for
+older servers):
+
 ```bash
-npx @ogunbaysal/mcp-probe python ./server.py
+npx @ogunbaysal/mcp-probe https://mcp.example.com/mcp
 ```
 
 Or install it once and reuse it:
@@ -100,24 +106,29 @@ mcp-probe --timeout 30000 node server.js
 # Treat warnings (e.g. missing tool descriptions) as failures
 mcp-probe --strict node server.js
 
-# Show connection lifecycle details, captured stderr, and raw errors
+# Show connection lifecycle details, captured stderr/network errors, and raw errors
 mcp-probe --verbose node server.js
 
 # Only print the final status and any errors
 mcp-probe --quiet node server.js
 
-# Set environment variables the server needs (e.g. an API key), repeatable
+# stdio: set environment variables the server needs (e.g. an API key), repeatable
 mcp-probe --env API_KEY=secret --env DEBUG=1 node server.js
+
+# http(s): a remote server behind auth
+mcp-probe --header "Authorization: Bearer <token>" https://mcp.example.com/mcp
 ```
 
 Anything after your server's command belongs to _that_ command, not to mcp-probe — so
 `mcp-probe node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
-you'd expect. mcp-probe's own flags must come before the command.
+you'd expect. mcp-probe's own flags must come before the target. A URL target takes no further
+arguments, since there's no command line to build.
 
-The target process always inherits mcp-probe's own environment, so `export API_KEY=... && mcp-probe
-...` already works. `--env KEY=VALUE` is the explicit, scriptable alternative — handy in CI or when
-you don't want to export a variable into the whole shell — and is layered on top of (never
-replaces) the inherited environment.
+`--env` is stdio-only and `--header` is http(s)-only; mcp-probe rejects the combination that
+doesn't match your target as a usage error (exit code 2). The stdio target process always inherits
+mcp-probe's own environment, so `export API_KEY=... && mcp-probe ...` already works — `--env` is
+the explicit, scriptable alternative, layered on top of (never replacing) the inherited
+environment.
 
 A failing server looks like this:
 
@@ -147,15 +158,44 @@ Result
 FAIL
 ```
 
+A real run against a public HTTP endpoint ([DeepWiki's MCP server](https://docs.devin.ai/work-with-devin/deepwiki-mcp)):
+
+```
+$ mcp-probe https://mcp.deepwiki.com/mcp
+
+MCP Probe
+
+✓ MCP connection established
+✓ Protocol initialized
+✓ Server info received
+✓ Capabilities received
+
+Server
+  Name: DeepWiki
+  Version: 2.14.3
+
+Capabilities
+  ✓ Tools      3
+  ✓ Resources  0
+  ✓ Prompts    0
+
+Result
+
+PASS
+18 checks passed
+```
+
+(Note there's no "Process started" line for an HTTP target — that check only applies to stdio.)
+
 ## Checks
 
 mcp-probe only tests capabilities your server actually advertises — it never fails a server for
 not implementing tools, resources, or prompts.
 
-**Process & connection**
+**Connection** (stdio: process start + handshake; http(s): Streamable HTTP/SSE handshake)
 
-- the process starts and the stdio transport connects
-- the process doesn't exit before initialization completes
+- stdio: the process starts and doesn't exit before initialization completes
+- http(s): the endpoint is reachable and speaks Streamable HTTP or, as a fallback, SSE
 - the initialize handshake succeeds and returns a protocol version, server info, and capabilities
 
 **Tools** (if the server advertises `tools`)
@@ -179,9 +219,9 @@ not implementing tools, resources, or prompts.
 
 **Performance**
 
-Every stage above is timed (process start, initialize, and each list operation) and shown in the
-report as an informational diagnostic. mcp-probe does not fail a server for being slow in v1 — the
-architecture leaves room for configurable thresholds later.
+Every stage above is timed (process start (stdio only), initialize, and each list operation) and
+shown in the report as an informational diagnostic. mcp-probe does not fail a server for being slow
+in v1 — the architecture leaves room for configurable thresholds later.
 
 ## JSON Output
 
@@ -192,22 +232,24 @@ architecture leaves room for configurable thresholds later.
 {
   "success": true,
   "exitCode": 0,
-  "target": { "command": "node", "args": ["server.js"] },
+  "target": { "type": "stdio", "command": "node", "args": ["server.js"] },
   "server": { "name": "example-server", "version": "1.0.0" },
   "protocol": { "version": "2025-06-18", "initialized": true },
   "capabilities": { "tools": 8, "resources": 3, "prompts": 2 },
-  "checks": [{ "id": "process.start", "label": "Process started", "status": "pass" }],
+  "checks": [{ "id": "init.connection", "label": "MCP connection established", "status": "pass" }],
   "warnings": [],
   "errors": [],
   "timings": { "processStart": 3, "initialize": 48, "tools": 32, "resources": 21, "prompts": 19 }
 }
 ```
 
-`checks` lists every individual line item with a stable `id` you can assert on in scripts.
-`warnings`/`errors` are the same findings collapsed into flat, structured diagnostics. Add
-`--verbose` to also include a `diagnostics` object (pid, captured transport errors, stderr tail).
-When a run fails before a connection could be established, the document includes a `fatal` field
-describing the stage, message, and possible causes.
+`target` is `{ "type": "stdio", "command": ..., "args": [...] }` or `{ "type": "http", "url": ... }`
+depending on what you ran against. `checks` lists every individual line item with a stable `id` you
+can assert on in scripts. `warnings`/`errors` are the same findings collapsed into flat, structured
+diagnostics. Add `--verbose` to also include a `diagnostics` object (stdio: pid, stderr tail;
+http(s): which transport — `streamable-http` or `sse` — was actually used; both: captured client
+errors). When a run fails before a connection could be established, the document includes a
+`fatal` field describing the stage, message, and possible causes.
 
 ## CI Usage
 
@@ -217,26 +259,35 @@ describing the stage, message, and possible causes.
 ```
 
 ```yaml
-- name: Check MCP server (strict, with a longer timeout)
-  run: npx @ogunbaysal/mcp-probe --strict --timeout 30000 node ./dist/server.js
+- name: Check a hosted MCP server (strict, with a longer timeout)
+  run: npx @ogunbaysal/mcp-probe --strict --timeout 30000 https://mcp.example.com/mcp
 ```
 
 ## Exit Codes
 
-| Code | Meaning                                                          |
-| ---- | ---------------------------------------------------------------- |
-| `0`  | success                                                          |
-| `1`  | MCP validation/check failure                                     |
-| `2`  | invalid CLI usage                                                |
-| `3`  | a stage (process startup, initialize, or an operation) timed out |
-| `4`  | the child process could not be started or exited unexpectedly    |
+| Code | Meaning                                                                                                               |
+| ---- | --------------------------------------------------------------------------------------------------------------------- |
+| `0`  | success                                                                                                               |
+| `1`  | MCP validation/check failure                                                                                          |
+| `2`  | invalid CLI usage                                                                                                     |
+| `3`  | a stage (process startup, initialize, or an operation) timed out                                                      |
+| `4`  | the target could not be reached: stdio process failed to start/exited, or the HTTP endpoint could not be connected to |
 
 ## Security
 
-mcp-probe executes the command you pass to it with the permissions of the current user, exactly
-like running it yourself. It never uses a shell to parse the command — arguments are passed
-directly to the OS — but it does not (and cannot) sandbox what the server itself does once running.
-Only run mcp-probe against servers you trust.
+mcp-probe executes the command you pass it (or connects to the URL you pass it) with the
+permissions of the current user, exactly like running it yourself. It never uses a shell to parse a
+stdio command — arguments are passed directly to the OS — but it does not (and cannot) sandbox what
+the server itself does once running, nor validate the identity of a remote HTTP endpoint beyond
+normal TLS certificate checking. Only run mcp-probe against servers you trust.
+
+## Known limitations
+
+- Connecting to a host that silently drops packets (a "blackholed" route, distinct from a normal
+  connection refusal) can leave the process running for the OS's own TCP retry window (commonly
+  ~10s) after mcp-probe has already reported the timeout — an underlying Node/undici limitation
+  when aborting a connection that never completed its handshake. Ordinary unreachable-host cases
+  (wrong port, DNS failure, refused connection) are unaffected and exit promptly.
 
 ## Development
 
@@ -261,25 +312,28 @@ The project is a small set of pure modules wired together by one orchestrator:
 
 ```
 src/
-  cli/          argument parsing, help/version, the process entrypoint
+  cli/          argument parsing (incl. stdio-vs-URL target detection), help/version, entrypoint
   core/         the shared result model, exit codes, and run-check.ts (the orchestrator)
   transport/    a purpose-built stdio Transport (full control over spawn/exit-code/cleanup)
-  checks/       one module per capability: initialization, tools, resources, prompts
+  checks/       one module per capability: stdio init, http(s) init, tools, resources, prompts
   validation/   pure functions: given parsed tools/resources/prompts, return findings
   output/       human and JSON renderers, both consuming the same CheckResult
   utils/        timeout, timing, and error-classification helpers
 
-fixtures/       real, runnable MCP servers used by the integration tests
+fixtures/       real, runnable MCP servers (stdio and HTTP) used by the integration tests
 tests/
   unit/         parser, validation, exit-code, and renderer tests (no process spawning)
-  integration/  real client/server communication over real stdio, plus true end-to-end
-                CLI tests that spawn the built dist/index.js binary
+  integration/  real client/server communication over real stdio and real HTTP, plus true
+                end-to-end CLI tests that spawn the built dist/index.js binary
 ```
 
-`checks/*` do the I/O (call the MCP client, measure timing); `validation/*` are pure functions
-that turn already-fetched data into findings, so they're unit-testable without a live server.
-Both `output/human.ts` and `output/json.ts` render the exact same `CheckResult` — neither talks to
-the MCP client directly.
+`checks/*` do the I/O (call the MCP client, measure timing) — `checks/initialization.ts` for
+stdio, `checks/http-initialization.ts` for HTTP(S) with Streamable HTTP → SSE fallback — both
+producing the same shared `InitializationOutcome` shape so `core/run-check.ts` treats either
+transport identically past the connection stage. `validation/*` are pure functions that turn
+already-fetched data into findings, so they're unit-testable without a live server. Both
+`output/human.ts` and `output/json.ts` render the exact same `CheckResult` — neither talks to the
+MCP client directly.
 
 ## Contributing
 

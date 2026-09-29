@@ -15,8 +15,8 @@ describe("parseCliArgs", () => {
         strict: false,
         timeoutMs: DEFAULT_TIMEOUT_MS,
         env: {},
-        command: "node",
-        commandArgs: ["server.js"],
+        headers: {},
+        target: { type: "stdio", command: "node", args: ["server.js"] },
       },
     });
   });
@@ -25,8 +25,11 @@ describe("parseCliArgs", () => {
     const result = parseCliArgs(["npx", "@my-org/my-mcp-server", "--flag"]);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.command).toBe("npx");
-    expect(result.value.commandArgs).toEqual(["@my-org/my-mcp-server", "--flag"]);
+    expect(result.value.target).toEqual({
+      type: "stdio",
+      command: "npx",
+      args: ["@my-org/my-mcp-server", "--flag"],
+    });
   });
 
   it("recognizes leading flags before the command", () => {
@@ -36,7 +39,7 @@ describe("parseCliArgs", () => {
     expect(result.value.json).toBe(true);
     expect(result.value.strict).toBe(true);
     expect(result.value.verbose).toBe(true);
-    expect(result.value.command).toBe("node");
+    expect(result.value.target).toEqual({ type: "stdio", command: "node", args: ["server.js"] });
   });
 
   it("parses --timeout with a space-separated value", () => {
@@ -74,7 +77,11 @@ describe("parseCliArgs", () => {
     if (!result.ok) return;
     expect(result.value.json).toBe(false);
     expect(result.value.verbose).toBe(false);
-    expect(result.value.commandArgs).toEqual(["server.js", "--json", "--verbose"]);
+    expect(result.value.target).toEqual({
+      type: "stdio",
+      command: "node",
+      args: ["server.js", "--json", "--verbose"],
+    });
   });
 
   it("treats -- as an explicit separator before the command", () => {
@@ -82,8 +89,11 @@ describe("parseCliArgs", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.json).toBe(true);
-    expect(result.value.command).toBe("--not-a-flag");
-    expect(result.value.commandArgs).toEqual(["arg"]);
+    expect(result.value.target).toEqual({
+      type: "stdio",
+      command: "--not-a-flag",
+      args: ["arg"],
+    });
   });
 
   it("rejects an unknown leading flag", () => {
@@ -101,7 +111,7 @@ describe("parseCliArgs", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.help).toBe(true);
-    expect(result.value.command).toBeNull();
+    expect(result.value.target).toBeNull();
   });
 
   it("allows --version with no command", () => {
@@ -173,6 +183,85 @@ describe("parseCliArgs", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.env).toEqual({});
-    expect(result.value.commandArgs).toEqual(["server.js", "--env", "A=1"]);
+    expect(result.value.target).toEqual({
+      type: "stdio",
+      command: "node",
+      args: ["server.js", "--env", "A=1"],
+    });
+  });
+
+  it("treats an http:// target as an HTTP target, not a command", () => {
+    const result = parseCliArgs(["http://localhost:3000/mcp"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.target).toEqual({ type: "http", url: "http://localhost:3000/mcp" });
+  });
+
+  it("treats an https:// target as an HTTP target", () => {
+    const result = parseCliArgs(["https://api.example.com/mcp"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.target).toEqual({ type: "http", url: "https://api.example.com/mcp" });
+  });
+
+  it("rejects extra arguments after a URL target", () => {
+    const result = parseCliArgs(["https://api.example.com/mcp", "extra"]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("parses a single --header flag", () => {
+    const result = parseCliArgs([
+      "--header",
+      "Authorization: Bearer secret",
+      "https://api.example.com/mcp",
+    ]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.headers).toEqual({ Authorization: "Bearer secret" });
+  });
+
+  it("parses --header=Name: Value syntax", () => {
+    const result = parseCliArgs(["--header=X-Api-Key: abc123", "https://api.example.com/mcp"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.headers).toEqual({ "X-Api-Key": "abc123" });
+  });
+
+  it("accumulates repeated --header flags", () => {
+    const result = parseCliArgs([
+      "--header",
+      "A: 1",
+      "--header",
+      "B: 2",
+      "https://api.example.com/mcp",
+    ]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.headers).toEqual({ A: "1", B: "2" });
+  });
+
+  it("trims whitespace around the header value", () => {
+    const result = parseCliArgs(["--header", "Authorization:   Bearer secret  ", "https://x/mcp"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.headers).toEqual({ Authorization: "Bearer secret" });
+  });
+
+  it("rejects --header without a value", () => {
+    expect(parseCliArgs(["--header"]).ok).toBe(false);
+  });
+
+  it("rejects a --header value with no ':' separator", () => {
+    expect(parseCliArgs(["--header", "NoColonHere", "https://x/mcp"]).ok).toBe(false);
+  });
+
+  it("rejects --header combined with a stdio target", () => {
+    const result = parseCliArgs(["--header", "A: 1", "node", "server.js"]);
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects --env combined with an http target", () => {
+    const result = parseCliArgs(["--env", "A=1", "https://api.example.com/mcp"]);
+    expect(result.ok).toBe(false);
   });
 });

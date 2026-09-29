@@ -14,7 +14,7 @@ export const ExitCode = {
   InvalidUsage: 2,
   /** A stage (process startup, initialization, or an operation) timed out. */
   Timeout: 3,
-  /** The child process could not be started or exited unexpectedly. */
+  /** The target could not be reached: stdio process failed to start/exited, or the HTTP endpoint could not be connected to. */
   ProcessError: 4,
 } as const;
 

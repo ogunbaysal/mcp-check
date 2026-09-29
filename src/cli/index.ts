@@ -23,21 +23,30 @@ async function main(): Promise<number> {
     process.stdout.write(`${getVersion()}\n`);
     return ExitCode.Success;
   }
-  // parseCliArgs guarantees `command` is set once help/version are ruled out.
-  const command = args.command;
-  if (command === null) {
+  // parseCliArgs guarantees `target` is set once help/version are ruled out.
+  const target = args.target;
+  if (target === null) {
     process.stderr.write(`Error: No command specified.\n\n${USAGE}\n`);
     return ExitCode.InvalidUsage;
   }
 
-  const result = await runCheck({
-    command,
-    args: args.commandArgs,
-    timeoutMs: args.timeoutMs,
-    strict: args.strict,
-    env: args.env,
-    clientVersion: getVersion(),
-  });
+  const result = await runCheck(
+    target.type === "stdio"
+      ? {
+          target,
+          timeoutMs: args.timeoutMs,
+          strict: args.strict,
+          env: args.env,
+          clientVersion: getVersion(),
+        }
+      : {
+          target,
+          timeoutMs: args.timeoutMs,
+          strict: args.strict,
+          headers: args.headers,
+          clientVersion: getVersion(),
+        },
+  );
 
   if (args.json) {
     process.stdout.write(renderJson(result, { verbose: args.verbose }) + "\n");

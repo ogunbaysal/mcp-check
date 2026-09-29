@@ -13,6 +13,7 @@ export default defineConfig({
     "invalid-server/dist/index": "fixtures/invalid-server/src/index.ts",
     "warn-only-server/dist/index": "fixtures/warn-only-server/src/index.ts",
     "env-echo-server/dist/index": "fixtures/env-echo-server/src/index.ts",
+    "http-server/dist/index": "fixtures/http-server/src/index.ts",
   },
   format: ["esm"],
   target: "node22",

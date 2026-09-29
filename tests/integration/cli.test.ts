@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { execFile } from "node:child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { execFile, spawn, type ChildProcess } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import { ExitCode } from "../../src/core/exit-codes.js";
@@ -87,4 +87,54 @@ describe("mcp-probe CLI (end-to-end)", () => {
     expect(exitCode).toBe(ExitCode.Timeout);
     expect(stdout).toContain("did not complete");
   }, 10_000);
+});
+
+describe("mcp-probe CLI (end-to-end, HTTP target)", () => {
+  let child: ChildProcess;
+  let baseUrl: string;
+
+  beforeAll(async () => {
+    const { promise, resolve, reject } = Promise.withResolvers<string>();
+    child = spawn(process.execPath, [fixture("http-server")], {
+      env: { ...process.env, PORT: "0" },
+      stdio: ["ignore", "pipe", "inherit"],
+    });
+    child.once("error", reject);
+    let buffer = "";
+    child.stdout?.on("data", (chunk: Buffer) => {
+      buffer += chunk.toString("utf8");
+      const match = /LISTENING:(\d+)/.exec(buffer);
+      if (match) resolve(`http://127.0.0.1:${match[1]}`);
+    });
+    baseUrl = await promise;
+  });
+
+  afterAll(() => {
+    child.kill();
+  });
+
+  it("connects to a URL target and prints a PASS report", async () => {
+    const { stdout, exitCode } = await runCli([`${baseUrl}/mcp`]);
+    expect(exitCode).toBe(ExitCode.Success);
+    expect(stdout).toContain("PASS");
+    expect(stdout).toContain("http-fixture-server");
+    // stdio-only line items must not appear for an HTTP target.
+    expect(stdout).not.toContain("Process started");
+  });
+
+  it("--header authenticates against a protected endpoint", async () => {
+    const { exitCode, stdout } = await runCli([
+      "--header",
+      "Authorization: Bearer test-token-12345",
+      `${baseUrl}/mcp-auth`,
+    ]);
+    expect(exitCode).toBe(ExitCode.Success);
+    expect(stdout).toContain("PASS");
+  });
+
+  it("exits 2 when --env is combined with an http(s) target", async () => {
+    const { exitCode, stderr } = await runCli(["--env", "A=1", `${baseUrl}/mcp`]);
+    expect(exitCode).toBe(ExitCode.InvalidUsage);
+    expect(stderr).toContain("--env");
+  });
 });

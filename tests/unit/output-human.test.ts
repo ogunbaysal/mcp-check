@@ -8,7 +8,7 @@ const TTY = { isTTY: true } as NodeJS.WriteStream;
 
 function buildPassingResult(overrides: Partial<CheckResult> = {}): CheckResult {
   return {
-    ...createEmptyResult({ command: "node", args: ["server.js"] }),
+    ...createEmptyResult({ type: "stdio", command: "node", args: ["server.js"] }),
     success: true,
     exitCode: ExitCode.Success,
     server: { name: "demo-server", version: "1.0.0" },
@@ -103,7 +103,7 @@ describe("renderHuman", () => {
 
   it("renders a fatal error with heading, message, and possible causes", () => {
     const result: CheckResult = {
-      ...createEmptyResult({ command: "node", args: ["server.js"] }),
+      ...createEmptyResult({ type: "stdio", command: "node", args: ["server.js"] }),
       fatal: {
         stage: "initialize",
         kind: "process",

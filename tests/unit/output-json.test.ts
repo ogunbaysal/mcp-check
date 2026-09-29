@@ -5,7 +5,7 @@ import { ExitCode } from "../../src/core/exit-codes.js";
 
 function buildResult(overrides: Partial<CheckResult> = {}): CheckResult {
   return {
-    ...createEmptyResult({ command: "node", args: ["server.js"] }),
+    ...createEmptyResult({ type: "stdio", command: "node", args: ["server.js"] }),
     success: true,
     exitCode: ExitCode.Success,
     server: { name: "demo-server", version: "1.0.0" },

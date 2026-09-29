@@ -72,7 +72,7 @@ spawning a process.
 ## Scope
 
 mcp-probe answers one question — "is my MCP server correctly implemented and ready to use?" — for
-a single server over stdio, from the command line. Before proposing a feature, check whether it
+a single server over stdio or HTTP(S), from the command line. Before proposing a feature, check whether it
 fits that. Explicitly out of scope for now: a web dashboard, a hosted service, an HTTP/SSE proxy,
 automatic tool execution, LLM-based evaluation, a benchmarking suite, or persistent
 history/tracing. `mcp-probe test` / `benchmark` / `inspect` subcommands and file-based

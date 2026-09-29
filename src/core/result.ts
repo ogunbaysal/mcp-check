@@ -1,3 +1,4 @@
+import type { ServerCapabilities } from "@modelcontextprotocol/sdk/types.js";
 import { ExitCode } from "./exit-codes.js";
 
 /** Status of a single diagnostic line item shown to the user. */
@@ -25,7 +26,15 @@ export interface Diagnostic {
   detail?: string;
 }
 
-/** The stage of the connection lifecycle in which a fatal error occurred. */
+/**
+ * The stage of the connection lifecycle in which a fatal error occurred.
+ * "process" covers "the transport could not even be established" (stdio:
+ * the process never spawned or exited before responding; http: the host
+ * could not be reached at all — DNS/connection failure). "initialize"
+ * covers "a connection existed but the MCP handshake itself failed" (stdio:
+ * process exited mid-handshake; http: a response came back but was an
+ * error, malformed, or timed out).
+ */
 export type FatalStage = "process" | "initialize";
 
 /** The category of a fatal error, used to select the process exit code. */
@@ -72,6 +81,10 @@ export interface CapabilityCounts {
   prompts?: number | undefined;
 }
 
+/** Where mcp-probe is connecting: a spawned stdio process, or a remote HTTP(S) endpoint. */
+export type Target =
+  { type: "stdio"; command: string; args: string[] } | { type: "http"; url: string };
+
 /**
  * The single source of truth for a check run. Both the human-readable
  * renderer (output/human.ts) and the JSON renderer (output/json.ts) consume
@@ -80,7 +93,7 @@ export interface CapabilityCounts {
 export interface CheckResult {
   success: boolean;
   exitCode: ExitCode;
-  target: { command: string; args: string[] };
+  target: Target;
   server?: ServerInfo | undefined;
   protocol?: ProtocolInfo | undefined;
   capabilities: CapabilityCounts;
@@ -98,14 +111,42 @@ export interface CheckResult {
 }
 
 export interface ConnectionDiagnostics {
-  pid: number | null;
   /** Messages captured from the MCP client's onerror callback during the run. */
   clientErrors: string[];
-  /** Trailing stderr output captured from the child process, if any. */
+  /** stdio only: the spawned process id, if one was spawned. */
+  pid: number | null;
+  /** stdio only: trailing stderr output captured from the child process. */
   stderrTail: string;
+  /** http only: which HTTP transport variant the connection ended up using. */
+  httpTransport?: "streamable-http" | "sse" | undefined;
 }
 
-export function createEmptyResult(target: { command: string; args: string[] }): CheckResult {
+/**
+ * The outcome of establishing the MCP connection (transport connect + the
+ * initialize handshake), shared by both the stdio and HTTP check modules so
+ * `core/run-check.ts` can consume either uniformly. `processStart` is
+ * present only for stdio (there is no equivalent phase over HTTP).
+ */
+export interface InitializationSuccess {
+  fatal: undefined;
+  checks: CheckItem[];
+  timings: { processStart?: number; initialize: number };
+  server: ServerInfo;
+  protocol: ProtocolInfo;
+  capabilities: ServerCapabilities;
+  diagnostics: ConnectionDiagnostics;
+}
+
+export interface InitializationFailure {
+  fatal: FatalError;
+  checks: CheckItem[];
+  timings: { processStart?: number; initialize?: number };
+  diagnostics: ConnectionDiagnostics;
+}
+
+export type InitializationOutcome = InitializationSuccess | InitializationFailure;
+
+export function createEmptyResult(target: Target): CheckResult {
   return {
     success: false,
     exitCode: ExitCode.CheckFailure,
