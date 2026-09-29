@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { ExitCode } from "../../src/core/exit-codes.js";
 
 // End-to-end: spawns the actual built dist/index.js as a real child process
-// (exactly how a user's `npx @ogunbaysal/mcp-probe ...` would run), exercising argument
+// (exactly how a user's `npx @ogunbaysal/mcp-check ...` would run), exercising argument
 // parsing, process spawning, and both renderers together. Requires `npm run
 // build` to have produced dist/index.js and the fixtures (handled by the
 // `pretest` npm script).
@@ -36,11 +36,11 @@ async function runCli(args: string[]): Promise<CliResult> {
   }
 }
 
-describe("mcp-probe CLI (end-to-end)", () => {
+describe("mcp-check CLI (end-to-end)", () => {
   it("prints help and exits 0", async () => {
     const { stdout, exitCode } = await runCli(["--help"]);
     expect(exitCode).toBe(ExitCode.Success);
-    expect(stdout).toContain("Usage: mcp-probe");
+    expect(stdout).toContain("Usage: mcp-check");
   });
 
   it("prints a version string and exits 0", async () => {
@@ -78,7 +78,7 @@ describe("mcp-probe CLI (end-to-end)", () => {
   });
 
   it("exits 4 when the target process cannot be started", async () => {
-    const { exitCode } = await runCli(["definitely-not-a-real-mcp-probe-binary"]);
+    const { exitCode } = await runCli(["definitely-not-a-real-mcp-check-binary"]);
     expect(exitCode).toBe(ExitCode.ProcessError);
   });
 
@@ -89,7 +89,7 @@ describe("mcp-probe CLI (end-to-end)", () => {
   }, 10_000);
 });
 
-describe("mcp-probe CLI (end-to-end, HTTP target)", () => {
+describe("mcp-check CLI (end-to-end, HTTP target)", () => {
   let child: ChildProcess;
   let baseUrl: string;
 

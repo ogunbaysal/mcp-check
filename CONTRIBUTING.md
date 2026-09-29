@@ -1,6 +1,6 @@
-# Contributing to mcp-probe
+# Contributing to mcp-check
 
-Thanks for considering a contribution. mcp-probe is deliberately small — please read the
+Thanks for considering a contribution. mcp-check is deliberately small — please read the
 "Scope" section below before proposing new features.
 
 ## Getting started
@@ -18,7 +18,7 @@ correctly.
 
 ## Development workflow
 
-- `npm run dev` — rebuilds on change and runs `mcp-probe --help`.
+- `npm run dev` — rebuilds on change and runs `mcp-check --help`.
 - `npm run test:watch` — vitest in watch mode.
 - `npm run lint` / `npm run typecheck` / `npm run format` — run before opening a PR.
 - `npm run build` — produces `dist/index.js` (the published CLI) and `fixtures/*/dist` (the fixture
@@ -71,11 +71,11 @@ spawning a process.
 
 ## Scope
 
-mcp-probe answers one question — "is my MCP server correctly implemented and ready to use?" — for
+mcp-check answers one question — "is my MCP server correctly implemented and ready to use?" — for
 a single server over stdio or HTTP(S), from the command line. Before proposing a feature, check whether it
 fits that. Explicitly out of scope for now: a web dashboard, a hosted service, an HTTP/SSE proxy,
 automatic tool execution, LLM-based evaluation, a benchmarking suite, or persistent
-history/tracing. `mcp-probe test` / `benchmark` / `inspect` subcommands and file-based
+history/tracing. `mcp-check test` / `benchmark` / `inspect` subcommands and file-based
 configuration are plausible future directions — the architecture doesn't block them — but aren't
 implemented yet; please open an issue to discuss before building one.
 
@@ -84,7 +84,7 @@ implemented yet; please open an issue to discuss before building one.
 Publishing to npm is handled by `.github/workflows/release.yml`, triggered by pushing a version
 tag. One-time setup: create an npm
 [automation access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) for the
-`@ogunbaysal/mcp-probe` package and add it as a repository secret named `NPM_TOKEN`
+`@ogunbaysal/mcp-check` package and add it as a repository secret named `NPM_TOKEN`
 (Settings → Secrets and variables → Actions).
 
 To cut a release:

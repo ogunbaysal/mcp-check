@@ -3,7 +3,7 @@
 A fast CLI health check and linter for [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers.
 
 ```bash
-npx @ogunbaysal/mcp-probe npx your-mcp-server
+npx @ogunbaysal/mcp-check npx your-mcp-server
 ```
 
 It connects to your server — over stdio (spawning a command) or over HTTP (a URL) — runs it
@@ -12,7 +12,7 @@ through the MCP handshake, exercises whatever capabilities it advertises
 code your CI can act on.
 
 ```
-$ mcp-probe node ./dist/server.js
+$ mcp-check node ./dist/server.js
 
 MCP Probe
 
@@ -58,7 +58,7 @@ that writes a stray `console.log` to stdout and silently breaks the JSON-RPC str
 bugs only surface once a real client (an IDE, an agent) tries to use the server — and even then the
 error is usually an opaque connection failure with no explanation.
 
-mcp-probe is the `curl` + healthcheck + linter you run before that happens: point it at the command
+mcp-check is the `curl` + healthcheck + linter you run before that happens: point it at the command
 that starts your server (or the URL it's hosted at), and in well under a second you know whether it
 actually works.
 
@@ -71,9 +71,9 @@ ready to use?" — and stays out of your way otherwise.
 **A local server, run over stdio:**
 
 ```bash
-npx @ogunbaysal/mcp-probe npx @my-org/my-mcp-server
-npx @ogunbaysal/mcp-probe node ./dist/server.js
-npx @ogunbaysal/mcp-probe python ./server.py
+npx @ogunbaysal/mcp-check npx @my-org/my-mcp-server
+npx @ogunbaysal/mcp-check node ./dist/server.js
+npx @ogunbaysal/mcp-check python ./server.py
 ```
 
 **A remote server, run over HTTP** (the target is auto-detected as a URL when it starts with
@@ -81,59 +81,59 @@ npx @ogunbaysal/mcp-probe python ./server.py
 older servers):
 
 ```bash
-npx @ogunbaysal/mcp-probe https://mcp.example.com/mcp
+npx @ogunbaysal/mcp-check https://mcp.example.com/mcp
 ```
 
 Or install it once and reuse it:
 
 ```bash
-npm install -g @ogunbaysal/mcp-probe
-mcp-probe node ./dist/server.js
+npm install -g @ogunbaysal/mcp-check
+mcp-check node ./dist/server.js
 ```
 
 ## Examples
 
 ```bash
 # Human-readable report (default)
-mcp-probe node server.js
+mcp-check node server.js
 
 # Machine-readable JSON for scripts/CI
-mcp-probe --json node server.js
+mcp-check --json node server.js
 
 # Give a slow server more time (default is 10000ms)
-mcp-probe --timeout 30000 node server.js
+mcp-check --timeout 30000 node server.js
 
 # Treat warnings (e.g. missing tool descriptions) as failures
-mcp-probe --strict node server.js
+mcp-check --strict node server.js
 
 # Show connection lifecycle details, captured stderr/network errors, and raw errors
-mcp-probe --verbose node server.js
+mcp-check --verbose node server.js
 
 # Only print the final status and any errors
-mcp-probe --quiet node server.js
+mcp-check --quiet node server.js
 
 # stdio: set environment variables the server needs (e.g. an API key), repeatable
-mcp-probe --env API_KEY=secret --env DEBUG=1 node server.js
+mcp-check --env API_KEY=secret --env DEBUG=1 node server.js
 
 # http(s): a remote server behind auth
-mcp-probe --header "Authorization: Bearer <token>" https://mcp.example.com/mcp
+mcp-check --header "Authorization: Bearer <token>" https://mcp.example.com/mcp
 ```
 
-Anything after your server's command belongs to _that_ command, not to mcp-probe — so
-`mcp-probe node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
-you'd expect. mcp-probe's own flags must come before the target. A URL target takes no further
+Anything after your server's command belongs to _that_ command, not to mcp-check — so
+`mcp-check node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
+you'd expect. mcp-check's own flags must come before the target. A URL target takes no further
 arguments, since there's no command line to build.
 
-`--env` is stdio-only and `--header` is http(s)-only; mcp-probe rejects the combination that
+`--env` is stdio-only and `--header` is http(s)-only; mcp-check rejects the combination that
 doesn't match your target as a usage error (exit code 2). The stdio target process always inherits
-mcp-probe's own environment, so `export API_KEY=... && mcp-probe ...` already works — `--env` is
+mcp-check's own environment, so `export API_KEY=... && mcp-check ...` already works — `--env` is
 the explicit, scriptable alternative, layered on top of (never replacing) the inherited
 environment.
 
 A failing server looks like this:
 
 ```
-$ mcp-probe node ./broken-server.js
+$ mcp-check node ./broken-server.js
 
 MCP Probe
 
@@ -151,7 +151,7 @@ Possible causes:
 
 Run again with:
 
-  mcp-probe --verbose node ./broken-server.js
+  mcp-check --verbose node ./broken-server.js
 
 Result
 
@@ -161,7 +161,7 @@ FAIL
 A real run against a public HTTP endpoint ([DeepWiki's MCP server](https://docs.devin.ai/work-with-devin/deepwiki-mcp)):
 
 ```
-$ mcp-probe https://mcp.deepwiki.com/mcp
+$ mcp-check https://mcp.deepwiki.com/mcp
 
 MCP Probe
 
@@ -189,7 +189,7 @@ PASS
 
 ## Checks
 
-mcp-probe only tests capabilities your server actually advertises — it never fails a server for
+mcp-check only tests capabilities your server actually advertises — it never fails a server for
 not implementing tools, resources, or prompts.
 
 **Connection** (stdio: process start + handshake; http(s): Streamable HTTP/SSE handshake)
@@ -220,7 +220,7 @@ not implementing tools, resources, or prompts.
 **Performance**
 
 Every stage above is timed (process start (stdio only), initialize, and each list operation) and
-shown in the report as an informational diagnostic. mcp-probe does not fail a server for being slow
+shown in the report as an informational diagnostic. mcp-check does not fail a server for being slow
 in v1 — the architecture leaves room for configurable thresholds later.
 
 ## JSON Output
@@ -255,12 +255,12 @@ errors). When a run fails before a connection could be established, the document
 
 ```yaml
 - name: Check MCP server
-  run: npx @ogunbaysal/mcp-probe npm run start:mcp
+  run: npx @ogunbaysal/mcp-check npm run start:mcp
 ```
 
 ```yaml
 - name: Check a hosted MCP server (strict, with a longer timeout)
-  run: npx @ogunbaysal/mcp-probe --strict --timeout 30000 https://mcp.example.com/mcp
+  run: npx @ogunbaysal/mcp-check --strict --timeout 30000 https://mcp.example.com/mcp
 ```
 
 ## Exit Codes
@@ -275,17 +275,17 @@ errors). When a run fails before a connection could be established, the document
 
 ## Security
 
-mcp-probe executes the command you pass it (or connects to the URL you pass it) with the
+mcp-check executes the command you pass it (or connects to the URL you pass it) with the
 permissions of the current user, exactly like running it yourself. It never uses a shell to parse a
 stdio command — arguments are passed directly to the OS — but it does not (and cannot) sandbox what
 the server itself does once running, nor validate the identity of a remote HTTP endpoint beyond
-normal TLS certificate checking. Only run mcp-probe against servers you trust.
+normal TLS certificate checking. Only run mcp-check against servers you trust.
 
 ## Known limitations
 
 - Connecting to a host that silently drops packets (a "blackholed" route, distinct from a normal
   connection refusal) can leave the process running for the OS's own TCP retry window (commonly
-  ~10s) after mcp-probe has already reported the timeout — an underlying Node/undici limitation
+  ~10s) after mcp-check has already reported the timeout — an underlying Node/undici limitation
   when aborting a connection that never completed its handshake. Ordinary unreachable-host cases
   (wrong port, DNS failure, refused connection) are unaffected and exit promptly.
 

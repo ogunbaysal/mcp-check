@@ -28,7 +28,7 @@ const KILL_GRACE_MS = 2000;
  * A Node.js stdio transport for the MCP SDK's `Client`/`Protocol` classes.
  *
  * We implement this ourselves (rather than using the SDK's built-in
- * `StdioClientTransport`) because mcp-probe needs full ownership of the
+ * `StdioClientTransport`) because mcp-check needs full ownership of the
  * child process lifecycle to report accurate diagnostics: the real exit
  * code/signal on premature termination, captured stderr for error hints,
  * a bounded spawn timeout, and a guarantee that the process is always

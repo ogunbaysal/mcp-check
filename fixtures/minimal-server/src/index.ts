@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // A minimal, spec-valid MCP server: no tools, resources, or prompts at all.
-// mcp-probe must not fail just because these capabilities are absent.
+// mcp-check must not fail just because these capabilities are absent.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 

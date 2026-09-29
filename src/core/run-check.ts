@@ -35,7 +35,7 @@ export type RunCheckOptions =
       headers: Record<string, string>;
     };
 
-const CLIENT_NAME = "mcp-probe";
+const CLIENT_NAME = "mcp-check";
 
 /** Explicit type predicate: TS does not reliably narrow a union via a nested discriminant like `options.target.type` from a plain comparison. */
 function isStdioOptions(

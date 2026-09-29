@@ -5,7 +5,7 @@ name: Release
 #   git push --follow-tags
 #
 # Requires an NPM_TOKEN repository secret (an npm "Automation" or granular
-# access token, with publish rights for @ogunbaysal/mcp-probe). See
+# access token, with publish rights for @ogunbaysal/mcp-check). See
 # CONTRIBUTING.md for the full release process.
 
 on:

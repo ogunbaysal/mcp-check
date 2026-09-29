@@ -81,7 +81,7 @@ export interface CapabilityCounts {
   prompts?: number | undefined;
 }
 
-/** Where mcp-probe is connecting: a spawned stdio process, or a remote HTTP(S) endpoint. */
+/** Where mcp-check is connecting: a spawned stdio process, or a remote HTTP(S) endpoint. */
 export type Target =
   { type: "stdio"; command: string; args: string[] } | { type: "http"; url: string };
 

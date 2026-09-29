@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // A fully-correct MCP server: every tool/resource/prompt is valid, every
-// tool has a description. Used to assert mcp-probe reports a clean PASS.
+// tool has a description. Used to assert mcp-check reports a clean PASS.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";

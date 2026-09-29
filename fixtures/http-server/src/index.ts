@@ -3,7 +3,7 @@
 //   /mcp          Streamable HTTP, stateless, no auth required.
 //   /mcp-auth     Streamable HTTP, stateless, requires "Authorization: Bearer test-token-12345".
 //   /sse          SSE-only (the deprecated transport), no Streamable HTTP support at this
-//                 path at all — POSTing here 404s, which is exactly the signal mcp-probe's
+//                 path at all — POSTing here 404s, which is exactly the signal mcp-check's
 //                 client should use to fall back from Streamable HTTP to SSE.
 //   /not-json     Returns a plain HTML body instead of an MCP response.
 // Anything else 404s. Listens on process.env.PORT (use "0" for an OS-assigned

@@ -71,7 +71,7 @@ describe("parseCliArgs", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("does not treat flags appearing after the command as mcp-probe's own", () => {
+  it("does not treat flags appearing after the command as mcp-check's own", () => {
     const result = parseCliArgs(["node", "server.js", "--json", "--verbose"]);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -178,7 +178,7 @@ describe("parseCliArgs", () => {
     expect(parseCliArgs(["--env", "=value", "node", "server.js"]).ok).toBe(false);
   });
 
-  it("does not treat --env after the command as mcp-probe's own", () => {
+  it("does not treat --env after the command as mcp-check's own", () => {
     const result = parseCliArgs(["node", "server.js", "--env", "A=1"]);
     expect(result.ok).toBe(true);
     if (!result.ok) return;

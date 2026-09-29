@@ -118,7 +118,7 @@ describe("runCheck against real stdio fixture servers", () => {
   });
 
   it("reports exit code 4 for a command that does not exist", async () => {
-    const result = await runStdio({ command: "definitely-not-a-real-mcp-probe-binary" });
+    const result = await runStdio({ command: "definitely-not-a-real-mcp-check-binary" });
 
     expect(result.success).toBe(false);
     expect(result.exitCode).toBe(ExitCode.ProcessError);
@@ -166,7 +166,7 @@ describe("runCheck against real stdio fixture servers", () => {
 
     // No MCP_CHECK_TEST_ENV_VALUE was set in this test process's own env,
     // so the fixture falls back to "unset" — proving absence is also
-    // faithfully propagated, not silently defaulted by mcp-probe itself.
+    // faithfully propagated, not silently defaulted by mcp-check itself.
     expect(result.server?.version).toBe("unset");
   });
 });

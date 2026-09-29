@@ -1,5 +1,5 @@
 {
-  "name": "@ogunbaysal/mcp-probe",
+  "name": "@ogunbaysal/mcp-check",
   "version": "0.1.0",
   "description": "A fast CLI health check and linter for MCP (Model Context Protocol) servers.",
   "keywords": [
@@ -18,7 +18,7 @@
     "url": "git+https://github.com/ogunbaysal/mcp-check.git"
   },
   "license": "MIT",
-  "author": "mcp-probe contributors",
+  "author": "mcp-check contributors",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "bin": {
-    "mcp-probe": "dist/index.js"
+    "mcp-check": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [

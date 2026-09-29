@@ -201,7 +201,7 @@ function renderFatal(result: CheckResult, verbose: boolean, color: boolean): str
       result.target.type === "stdio"
         ? [result.target.command, ...result.target.args].join(" ")
         : result.target.url;
-    lines.push("Run again with:", "", `  mcp-probe --verbose ${targetCmd}`, "");
+    lines.push("Run again with:", "", `  mcp-check --verbose ${targetCmd}`, "");
   }
 
   lines.push("Result", "");

@@ -63,6 +63,6 @@ main()
   })
   .catch((error: unknown) => {
     const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
-    process.stderr.write(`Unexpected error in mcp-probe:\n${message}\n`);
+    process.stderr.write(`Unexpected error in mcp-check:\n${message}\n`);
     process.exitCode = ExitCode.ProcessError;
   });
