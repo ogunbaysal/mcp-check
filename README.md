@@ -105,11 +105,19 @@ mcp-check --verbose node server.js
 
 # Only print the final status and any errors
 mcp-check --quiet node server.js
+
+# Set environment variables the server needs (e.g. an API key), repeatable
+mcp-check --env API_KEY=secret --env DEBUG=1 node server.js
 ```
 
 Anything after your server's command belongs to _that_ command, not to mcp-check — so
 `mcp-check node server.js --port 4000` runs `node server.js --port 4000` and checks it, exactly as
 you'd expect. mcp-check's own flags must come before the command.
+
+The target process always inherits mcp-check's own environment, so `export API_KEY=... && mcp-check
+...` already works. `--env KEY=VALUE` is the explicit, scriptable alternative — handy in CI or when
+you don't want to export a variable into the whole shell — and is layered on top of (never
+replaces) the inherited environment.
 
 A failing server looks like this:
 

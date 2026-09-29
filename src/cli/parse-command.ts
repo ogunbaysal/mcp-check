@@ -6,7 +6,8 @@ export interface ParsedArgs {
   verbose: boolean;
   strict: boolean;
   timeoutMs: number;
-  /** null only when help/version is set and no command was given. */
+  /** Extra environment variables to set on the target process, layered on top of the inherited environment. */
+  env: Record<string, string>;
   command: string | null;
   commandArgs: string[];
 }
@@ -34,6 +35,7 @@ export function parseCliArgs(argv: readonly string[]): ParseResult {
     verbose: false,
     strict: false,
     timeoutMs: DEFAULT_TIMEOUT_MS,
+    env: {},
     command: null,
     commandArgs: [],
   };
@@ -75,6 +77,19 @@ export function parseCliArgs(argv: readonly string[]): ParseResult {
     if (token === "--strict") {
       args.strict = true;
       i++;
+      continue;
+    }
+    if (token === "--env" || token.startsWith("--env=")) {
+      const raw = token.startsWith("--env=") ? token.slice("--env=".length) : argv[i + 1];
+      if (raw === undefined) {
+        return { ok: false, error: "--env requires a value in KEY=VALUE format." };
+      }
+      const eq = raw.indexOf("=");
+      if (eq <= 0) {
+        return { ok: false, error: `--env must be in KEY=VALUE format, got "${raw}".` };
+      }
+      args.env[raw.slice(0, eq)] = raw.slice(eq + 1);
+      i += token.startsWith("--env=") ? 1 : 2;
       continue;
     }
     if (token === "--timeout" || token.startsWith("--timeout=")) {

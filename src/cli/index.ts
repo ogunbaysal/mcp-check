@@ -35,6 +35,7 @@ async function main(): Promise<number> {
     args: args.commandArgs,
     timeoutMs: args.timeoutMs,
     strict: args.strict,
+    env: args.env,
     clientVersion: getVersion(),
   });
 

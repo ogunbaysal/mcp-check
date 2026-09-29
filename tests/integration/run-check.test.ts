@@ -14,6 +14,7 @@ function fixture(name: string): string {
 const baseOptions = {
   timeoutMs: 8000,
   strict: false,
+  env: {},
   clientVersion: "test",
 };
 
@@ -141,5 +142,31 @@ describe("runCheck against real fixture servers", () => {
     expect(strict.warnings).toEqual(lenient.warnings);
     expect(strict.success).toBe(false);
     expect(strict.exitCode).toBe(ExitCode.CheckFailure);
+  });
+
+  it("passes --env values through to the spawned process's environment", async () => {
+    const result = await runCheck({
+      ...baseOptions,
+      command: process.execPath,
+      args: [fixture("env-echo-server")],
+      env: { MCP_CHECK_TEST_ENV_VALUE: "hello-from-env-flag" },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.server?.version).toBe("hello-from-env-flag");
+  });
+
+  it("does not require --env: the child still inherits the parent process environment", async () => {
+    const result = await runCheck({
+      ...baseOptions,
+      command: process.execPath,
+      args: [fixture("env-echo-server")],
+      env: {},
+    });
+
+    // No MCP_CHECK_TEST_ENV_VALUE was set in this test process's own env,
+    // so the fixture falls back to "unset" — proving absence is also
+    // faithfully propagated, not silently defaulted by mcp-check itself.
+    expect(result.server?.version).toBe("unset");
   });
 });

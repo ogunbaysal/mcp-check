@@ -10,6 +10,8 @@ export interface RunCheckOptions {
   args: string[];
   timeoutMs: number;
   strict: boolean;
+  /** Extra environment variables to set on the target process, layered on top of the inherited environment. */
+  env: Record<string, string>;
   clientVersion: string;
 }
 
@@ -26,6 +28,7 @@ export async function runCheck(options: RunCheckOptions): Promise<CheckResult> {
   const transport = new StdioTransport({
     command: options.command,
     args: options.args,
+    env: options.env,
     spawnTimeoutMs: options.timeoutMs,
   });
 

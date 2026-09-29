@@ -14,6 +14,7 @@ describe("parseCliArgs", () => {
         verbose: false,
         strict: false,
         timeoutMs: DEFAULT_TIMEOUT_MS,
+        env: {},
         command: "node",
         commandArgs: ["server.js"],
       },
@@ -118,5 +119,60 @@ describe("parseCliArgs", () => {
     const quiet = parseCliArgs(["-q", "node", "server.js"]);
     expect(quiet.ok).toBe(true);
     if (quiet.ok) expect(quiet.value.quiet).toBe(true);
+  });
+
+  it("parses a single --env KEY=VALUE flag", () => {
+    const result = parseCliArgs(["--env", "API_KEY=secret", "node", "server.js"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({ API_KEY: "secret" });
+  });
+
+  it("parses --env=KEY=VALUE syntax", () => {
+    const result = parseCliArgs(["--env=API_KEY=secret", "node", "server.js"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({ API_KEY: "secret" });
+  });
+
+  it("accumulates repeated --env flags", () => {
+    const result = parseCliArgs(["--env", "A=1", "--env", "B=2", "node", "server.js"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({ A: "1", B: "2" });
+  });
+
+  it("keeps the equals sign(s) in the value, splitting only on the first one", () => {
+    const result = parseCliArgs(["--env", "TOKEN=abc=def=123", "node", "server.js"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({ TOKEN: "abc=def=123" });
+  });
+
+  it("lets a later --env win when the same key is repeated", () => {
+    const result = parseCliArgs(["--env", "A=1", "--env", "A=2", "node", "server.js"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({ A: "2" });
+  });
+
+  it("rejects --env without a value", () => {
+    expect(parseCliArgs(["--env"]).ok).toBe(false);
+  });
+
+  it("rejects an --env value with no '=' separator", () => {
+    expect(parseCliArgs(["--env", "NOTKEYVALUE", "node", "server.js"]).ok).toBe(false);
+  });
+
+  it("rejects an --env value with an empty key", () => {
+    expect(parseCliArgs(["--env", "=value", "node", "server.js"]).ok).toBe(false);
+  });
+
+  it("does not treat --env after the command as mcp-check's own", () => {
+    const result = parseCliArgs(["node", "server.js", "--env", "A=1"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.env).toEqual({});
+    expect(result.value.commandArgs).toEqual(["server.js", "--env", "A=1"]);
   });
 });

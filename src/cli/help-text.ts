@@ -9,11 +9,15 @@ Examples:
   mcp-check node ./dist/server.js
   mcp-check --json python ./server.py
   mcp-check --timeout 30000 node server.js
+  mcp-check --env API_KEY=secret --env DEBUG=1 node server.js
 
 Options:
-  --json             Print a single machine-readable JSON report to stdout.
+  --json              Print a single machine-readable JSON report to stdout.
   --timeout <ms>      Timeout for each stage (process startup, initialize,
                       list operations). Default: 10000.
+  --env <KEY=VALUE>   Set an environment variable on the target process.
+                      Repeatable. Layered on top of the inherited
+                      environment; later --env flags win on conflicts.
   --strict            Treat warnings as failures (exit code 1).
   --verbose           Show connection lifecycle and diagnostic details.
   --quiet, -q         Print only the final status and error details.
