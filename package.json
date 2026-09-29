@@ -1,6 +1,6 @@
 {
   "name": "@ogunbaysal/mcp-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A fast CLI health check and linter for MCP (Model Context Protocol) servers.",
   "keywords": [
     "mcp",
