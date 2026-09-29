@@ -42,7 +42,7 @@ export function renderHuman(result: CheckResult, options: HumanRenderOptions): s
     return renderQuiet(result, color);
   }
 
-  const lines: string[] = ["MCP Probe", ""];
+  const lines: string[] = ["MCP Check", ""];
 
   if (result.fatal) {
     lines.push(...renderFatal(result, options.verbose, color));

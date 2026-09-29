@@ -1,4 +1,4 @@
-# MCP Probe
+# MCP Check
 
 A fast CLI health check and linter for [Model Context Protocol](https://modelcontextprotocol.io) (MCP) servers.
 
@@ -14,7 +14,7 @@ code your CI can act on.
 ```
 $ mcp-check node ./dist/server.js
 
-MCP Probe
+MCP Check
 
 ✓ Process started
 ✓ MCP connection established
@@ -135,7 +135,7 @@ A failing server looks like this:
 ```
 $ mcp-check node ./broken-server.js
 
-MCP Probe
+MCP Check
 
 ✗ MCP connection failed
 
@@ -163,7 +163,7 @@ A real run against a public HTTP endpoint ([DeepWiki's MCP server](https://docs.
 ```
 $ mcp-check https://mcp.deepwiki.com/mcp
 
-MCP Probe
+MCP Check
 
 ✓ MCP connection established
 ✓ Protocol initialized

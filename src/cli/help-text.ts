@@ -1,6 +1,6 @@
 export const USAGE = "Usage: mcp-check [options] <command> [args...] | <http(s)-url>";
 
-export const HELP_TEXT = `MCP Probe — a health check and linter for MCP servers
+export const HELP_TEXT = `MCP Check — a health check and linter for MCP servers
 
 ${USAGE}
 

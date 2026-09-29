@@ -58,7 +58,7 @@ describe("mcp-check CLI (end-to-end)", () => {
   it("exits 0 and prints a PASS report for a valid server", async () => {
     const { stdout, exitCode } = await runCli(["node", fixture("valid-server")]);
     expect(exitCode).toBe(ExitCode.Success);
-    expect(stdout).toContain("MCP Probe");
+    expect(stdout).toContain("MCP Check");
     expect(stdout).toContain("PASS");
     expect(stdout).toContain("valid-fixture-server");
   });
